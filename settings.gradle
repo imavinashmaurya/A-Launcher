@@ -1,0 +1,3 @@
+include ':appListSdk'
+include ':app'
+rootProject.name = "A Launcher"
