@@ -10,9 +10,10 @@
         android:theme="@style/Theme.ALauncher">
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTask">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -21,10 +22,11 @@
 
         <receiver
             android:name="com.avinash.applistsdk.PackageChangeReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:enabled="true">
             <intent-filter android:priority="999">
-                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
-                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
 
                 <data android:scheme="package" />
             </intent-filter>

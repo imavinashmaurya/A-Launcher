@@ -2,26 +2,39 @@ package com.avinash.alauncher
 
 import android.app.SearchManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.avinash.alauncher.databinding.ActivityMainBinding
 import com.avinash.applistsdk.AppListUtils
 import com.avinash.applistsdk.AppObject
+import com.avinash.applistsdk.PackageChangeReceiver
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var appListAdapter: AppListAdapter? = null
     private var searchView: SearchView? = null
+    private var appList: ArrayList<AppObject> = ArrayList()
+    private val packageChangeReceiver = PackageChangeReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindView()
         setAppListRecyclerView()
+        getData()
+        attachPackageChangeReceiver()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(packageChangeReceiver)
     }
 
     private fun bindView() {
@@ -29,18 +42,35 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
     }
 
+    private fun attachPackageChangeReceiver() {
+        registerReceiver(packageChangeReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
+        })
+    }
+
+    private fun getData() {
+        AppListUtils.getInstalledAppList(this.packageManager)
+        AppListUtils.appList.observe(this, Observer {
+            it?.let { itList ->
+                appList.clear()
+                appList.addAll(itList)
+                appListAdapter?.notifyDataSetChanged()
+            }
+        })
+    }
+
     private fun setAppListRecyclerView() {
-        AppListUtils.getInstalledAppList(this.packageManager)?.let { itAppList ->
-            appListAdapter = AppListAdapter(itAppList, object : RowClickListener {
-                override fun onRowClicked(item: AppObject) {
-                    val launchAppIntent =
-                        applicationContext.packageManager.getLaunchIntentForPackage(item.appPackageName)
-                    if (launchAppIntent != null) applicationContext.startActivity(launchAppIntent)
-                }
-            })
-            binding.rvAppList.adapter = appListAdapter
-            binding.rvAppList.layoutManager = LinearLayoutManager(applicationContext)
-        }
+        appListAdapter = AppListAdapter(appList, object : RowClickListener {
+            override fun onRowClicked(item: AppObject) {
+                val launchAppIntent =
+                    applicationContext.packageManager.getLaunchIntentForPackage(item.appPackageName)
+                if (launchAppIntent != null) applicationContext.startActivity(launchAppIntent)
+            }
+        })
+        binding.rvAppList.adapter = appListAdapter
+        binding.rvAppList.layoutManager = LinearLayoutManager(applicationContext)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -91,7 +121,6 @@ class MainActivity : AppCompatActivity() {
         }
         super.onBackPressed()
     }
-
 
 }
 

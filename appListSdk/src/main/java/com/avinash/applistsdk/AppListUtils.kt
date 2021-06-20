@@ -4,9 +4,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 
 object AppListUtils {
-    fun getInstalledAppList(packageManager: PackageManager): ArrayList<AppObject>? {
+
+    private val appMutableList: MutableLiveData<ArrayList<AppObject>> = MutableLiveData()
+    val appList: LiveData<ArrayList<AppObject>> get() = appMutableList
+
+    fun getInstalledAppList(packageManager: PackageManager) {
         val list: ArrayList<AppObject> = ArrayList<AppObject>()
         val intent = Intent(Intent.ACTION_MAIN, null)
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
@@ -29,7 +35,7 @@ object AppListUtils {
             if (!list.contains(app)) list.add(app)
         }
         list.sortBy { it.appName }
-        return list
+        appMutableList.postValue(list)
     }
 
 
