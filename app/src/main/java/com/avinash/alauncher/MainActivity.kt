@@ -42,12 +42,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
     }
 
-    private fun attachPackageChangeReceiver() {
-        registerReceiver(packageChangeReceiver, IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addDataScheme("package")
+    private fun setAppListRecyclerView() {
+        appListAdapter = AppListAdapter(appList, object : RowClickListener {
+            override fun onRowClicked(item: AppObject) {
+                val launchAppIntent =
+                    applicationContext.packageManager.getLaunchIntentForPackage(item.appPackageName)
+                if (launchAppIntent != null) applicationContext.startActivity(launchAppIntent)
+            }
         })
+        binding.rvAppList.adapter = appListAdapter
+        binding.rvAppList.layoutManager = LinearLayoutManager(applicationContext)
     }
 
     private fun getData() {
@@ -61,16 +65,13 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun setAppListRecyclerView() {
-        appListAdapter = AppListAdapter(appList, object : RowClickListener {
-            override fun onRowClicked(item: AppObject) {
-                val launchAppIntent =
-                    applicationContext.packageManager.getLaunchIntentForPackage(item.appPackageName)
-                if (launchAppIntent != null) applicationContext.startActivity(launchAppIntent)
-            }
+    private fun attachPackageChangeReceiver() {
+        // Need to register this to work on oreo and above
+        registerReceiver(packageChangeReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
         })
-        binding.rvAppList.adapter = appListAdapter
-        binding.rvAppList.layoutManager = LinearLayoutManager(applicationContext)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -57,6 +57,7 @@ internal class AppListAdapter(
         return appListFilter.size
     }
 
+    // for searching
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(charSequence: CharSequence?): FilterResults {
@@ -67,9 +68,6 @@ internal class AppListAdapter(
                     val filteredList: ArrayList<AppObject> =
                         java.util.ArrayList<AppObject>()
                     for (row in appList) {
-
-                        // name match condition. this might differ depending on your requirement
-                        // here we are looking for name or phone number match
                         if (row.appName.toLowerCase(Locale.ROOT).contains(
                                 charString.toLowerCase(
                                     Locale.ROOT
@@ -81,7 +79,6 @@ internal class AppListAdapter(
                     }
                     appListFilter = filteredList
                 }
-
                 val filterResults = FilterResults()
                 filterResults.values = appListFilter
                 return filterResults
@@ -91,7 +88,6 @@ internal class AppListAdapter(
                 appListFilter = results?.values as ArrayList<AppObject>
                 notifyDataSetChanged()
             }
-
         }
     }
 }

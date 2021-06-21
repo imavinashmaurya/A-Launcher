@@ -36,5 +36,4 @@ class PackageChangeReceiver : BroadcastReceiver() {
         }
         context?.packageManager?.let { AppListUtils.getInstalledAppList(it) }
     }
-
 }
